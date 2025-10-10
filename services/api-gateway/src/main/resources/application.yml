@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: ${USER_SERVICE_URL:lb://user-service}
+          predicates:
+            - Path=/user/**
+
+        - id: prompt-service
+          uri: ${PROMPT_SERVICE_URL:lb://prompt-service}
+          predicates:
+            - Path=/prompts/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: promptsCB
+                fallbackUri: forward:/fallback/prompts
+
+        - id: analytics-service
+          uri: ${ANALYTICS_SERVICE_URL:lb://analytics-service}
+          predicates:
+            - Path=/analytics/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: analyticsCB
+                fallbackUri: forward:/fallback/analytics
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true

@@ -1,0 +1,23 @@
+# node / svelte
+node_modules/
+.next/
+.build/
+.vite/
+.env
+.env.* 
+dist/
+.DS_Store
+
+# java / maven / gradle
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.gradle/
+build/
+
+# IDE
+*.iml
+/.idea
+/.vscode
+/.project
+.classpath
+.settings/

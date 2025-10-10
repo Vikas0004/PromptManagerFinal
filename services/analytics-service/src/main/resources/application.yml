@@ -1,0 +1,38 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: analytics-service
+
+  datasource:
+    url: jdbc:postgresql://promptmanager.c030omec28ek.us-east-1.rds.amazonaws.com:5432/promptmanager
+    username: postgres
+    password: pID5fL0KVQVvNJpRHNQD
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Eureka registration
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    #prefer-ip-address: true
+    prefer-ip-address: false
+    hostname: analytics-service-promptmanager.microservice-namespace  # 👈 ECS Cloud Map DNS name
+    non-secure-port: 8083
+logging:
+  level:
+    org.springframework: INFO
+    com.promptmanager: DEBUG
