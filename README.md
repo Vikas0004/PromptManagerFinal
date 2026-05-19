@@ -70,57 +70,43 @@ The Prompt Manager App follows a cloud-native microservices architecture with ce
          │                                           │                                  │
          │                                           │                                  │
          │                                           └──────────────┬───────────────────┘
-         │                                                          │
-         │                                                          ▼
+         │                                                          │──────────────────────────────────
+         │                                                          ▼                                 │
+         │                                           ┌──────────────────────────┐                     │
+         │                                           │       LLM Service         │                    │
+         │                                           │  RAG-based Prompt Assist  │                    │
+         │                                           │ Prompt Improvement        │                    │
+         │                                           │ Semantic Similarity       │                    │
+         │                                           │ Ollama / Local LLM        │                    │
+         │                                           └─────────────┬────────────┘                     │
+                                                                                                      │
+         │                                 View / Copy / Favorite Events                              │                 
+         │                                                 │                                          │
+         │                                                 ▼                                          │
+         │                                                                                            │
+         │                                 ┌──────────────────────────┐                               │
+         │                                 │    Analytics Service      │                              │
+         │                                 │ Views, Favorites, Copies  │                              │
+         │                                 │ Reports & Aggregations    │                              │
+         │                                 └─────────────┬────────────┘                               │
+         │                                               │                                            │
+         │                               Async View Events via RabbitMQ                               |
+         │                                               │                                            │
+         │                                               ▼                                            │
+         │                                 ┌──────────────────────────┐                               │
+         │                                 │        RabbitMQ           │                              │
+         │                                 │   Event Message Broker    │                              │
+         │                                 └──────────────────────────┘                               │
+         │                                                                                            │
+         └─────────────────────────────────────────────────────────────────────────────┐              │
+                                                                                       │              │
+                                                                                       ▼              ▼
 
-         │                                           ┌──────────────────────────┐
-         │                                           │       LLM Service         │
-         │                                           │  RAG-based Prompt Assist  │
-         │                                           │ Prompt Improvement        │
-         │                                           │ Semantic Similarity       │
-         │                                           │ Ollama / Local LLM        │
-         │                                           └─────────────┬────────────┘
-         │                                                         │
-         │                                                         │
-         │                                                         ▼
-
-         │                                           ┌──────────────────────────┐
-         │                                           │     Vector Store          │
-         │                                           │ FAISS / ChromaDB          │
-         │                                           │ Prompt Embeddings         │
-         │                                           └──────────────────────────┘
-
-         │
-         │
-         │                                 View / Copy / Favorite Events
-         │                                                 │
-         │                                                 ▼
-
-         │                                 ┌──────────────────────────┐
-         │                                 │    Analytics Service      │
-         │                                 │ Views, Favorites, Copies  │
-         │                                 │ Reports & Aggregations    │
-         │                                 └─────────────┬────────────┘
-         │                                               │
-         │                               Async View Events via RabbitMQ
-         │                                               │
-         │                                               ▼
-
-         │                                 ┌──────────────────────────┐
-         │                                 │        RabbitMQ           │
-         │                                 │   Event Message Broker    │
-         │                                 └──────────────────────────┘
-
-         │
-         └─────────────────────────────────────────────────────────────────────────────┐
-                                                                                      │
-                                                                                      ▼
-
-                                             ┌──────────────────────────────────────┐
-                                             │         PostgreSQL Database          │
-                                             │ Users, Prompts, Analytics Data       │
-                                             │ Embeddings Metadata                  │
-                                             └──────────────────────────────────────┘---
+                                                                         ┌──────────────────────────────────────┐
+                                                                         │         PostgreSQL Database          │
+                                                                         │ Users, Prompts, Analytics Data       │
+                                                                         │ Embeddings Metadata                  │
+                                                                         └──────────────────────────────────────┘---
 
 ## ⚙️ Features
 
@@ -204,26 +190,28 @@ The Prompt Manager App follows a cloud-native microservices architecture with ce
 - **MySQL (AWS RDS)**
 - **JWT Auth (io.jsonwebtoken)**
 - **Docker**
-- **AWS ECS Fargate**
-- **AWS CloudWatch (logs and alerts)**
+- **Docker Compose**
 
 ---
 
-## 🧪 Local Setup (Docker Compose) - Navigate to the service folder and run docker compose up | docker compose up -d
+## 🧪 Local Setup (Docker Compose) - Navigate to the service folder and run docker compose up --build | docker compose up 
 The initial container creation may take some time due to ollama size, if llama3 model is not already istalled that needs to be installed manually.
 
 once all the containers are up and running go to
 Entrypoint: [Prompt Manager](https://localhost:5173/login)
 
 
-# 🧠 Prompt Manager App – Frontend (SvelteKit UI)
 
-A modern **SvelteKit-based frontend** for the **Prompt Manager App**, enabling users to securely manage, analyze, and interact with AI prompts.  
-The app integrates with a cloud-native backend (Spring Boot microservices) deployed on **AWS ECS Fargate** and **RDS**.
+
+# Prompt Manager App – Frontend (SvelteKit UI)
+
+A modern **SvelteKit-based frontend** for the **Prompt Manager App**, enabling users to securely manage, analyze, search, and improve AI prompts.
+
+The frontend communicates with a cloud-native backend built using **Spring Boot microservices**, **Python FastAPI AI services**, **RabbitMQ**, and **PostgreSQL**, all orchestrated locally using **Docker Compose**.
 
 ---
 
-## ⚙️ Tech Stack
+# ⚙️ Tech Stack
 
 | Layer | Technology |
 |--------|-------------|
@@ -232,18 +220,104 @@ The app integrates with a cloud-native backend (Spring Boot microservices) deplo
 | **Styling** | Tailwind CSS |
 | **Build Tool** | Vite |
 | **State Management** | Svelte Stores |
-| **API Communication** | REST (via `fetch` + JWT) |
-| **Deployment** | AWS S3 (Static Hosting) + CloudFront (optional) |
+| **API Communication** | REST APIs (`fetch` + JWT Authentication) |
+| **Containerization** | Docker |
+| **Local Deployment** | Docker Compose |
 
 ---
 
-## 🎯 Core Features
+# 🎯 Core Features
 
 | Module | Description |
 |--------|--------------|
 | **Authentication** | Register and login using JWT tokens via `user-service`. |
-| **Prompt Management (CRUD)** | Create, edit, view, and delete AI prompts with ownership and access control. |
-| **Favorites & Analytics** | Mark prompts as favorites, view stats (views, copies, favorites). |
-| **Admin Dashboard** | Access real-time analytics reports: most viewed, copied, and favorited prompts. |
-| **Search & Filter** | Client-side search by title, description, or AI tool. |
-| **Responsive UI** | Mobile-first design using TailwindCSS and adaptive layouts. |
+| **Prompt Management (CRUD)** | Create, edit, view, search, and delete AI prompts securely. |
+| **Favorites & Analytics** | Mark prompts as favorites and track prompt engagement statistics. |
+| **Admin Analytics Dashboard** | View most viewed, copied, and favorited prompts globally. |
+| **Search & Filtering** | Filter prompts by AI tool, keyword, favorites, and semantic similarity. |
+| **Semantic Search** | Search prompts using natural language queries powered by vector embeddings. |
+| **Prompt Improvement Assistant** | Improve prompts using a RAG-based AI assistant powered by local LLMs. |
+| **AI Tool Recommendation** | Automatically suggest the most suitable AI tool for a prompt. |
+| **Responsive UI** | Mobile-first responsive design using TailwindCSS. |
+
+---
+
+# AI-Powered Features
+
+## Semantic Search
+
+Users can search prompts using natural language instead of exact keywords.
+
+### Examples
+- "Find prompts for writing formal emails"
+- "Show prompts related to Python code generation"
+- "Prompts for summarizing documents"
+
+The frontend integrates with the backend ML and LLM services to display semantically relevant prompts ranked by similarity.
+
+---
+
+## Prompt Improvement Assistant
+
+Users can click **"Improve with AI"** on any prompt.
+
+The system:
+1. Retrieves semantically similar high-performing prompts.
+2. Uses a local LLM (Ollama) with Retrieval-Augmented Generation (RAG).
+3. Returns:
+   - Improved prompt version
+   - Explanation of improvements
+   - Reference prompts used as context
+
+---
+
+## AI Tool Auto-Suggestion
+
+While creating prompts, the frontend displays suggested AI tools such as:
+- ChatGPT
+- Gemini
+- Claude
+- Midjourney
+- Perplexity
+
+Suggestions are generated using the backend ML/NLP classifier service.
+
+---
+
+# 🏗️ Frontend Architecture
+
+```text
+SvelteKit Frontend
+       │
+       ▼
+API Gateway
+       │
+ ┌─────┼─────────────────────────────────────────────┐
+ │     │                     │                       │
+ ▼     ▼                     ▼                       ▼
+
+User Service        Prompt Service        Analytics Service
+(JWT Auth)          (CRUD + Search)       (Views/Favorites)
+
+                             │
+                             ▼
+
+                  Preprocessing Service
+            (Cleaning + Lemmatization)
+
+                             │
+                             ▼
+
+                      ML/NLP Service
+                (Embeddings + Prediction)
+
+                             │─────────────────────────────────────────────┐
+                             ▼                                             ▼
+
+                        LLM Service                         Cleaned Prompt + Embedings stored in DB
+               (RAG + Prompt Improvement)                               (Postgres)
+
+                             │
+                             ▼
+
+                    Vector Store (FAISS)
