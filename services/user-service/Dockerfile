@@ -1,14 +1,26 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:17-jdk-slim
+# ---------- Stage 1: Build ----------
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
-# Set the working directory inside the container
+WORKDIR /build
+
+# Copy pom.xml and download dependencies first (Docker cache optimization)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN mvn clean package -DskipTests
+
+# ---------- Stage 2: Runtime ----------
+FROM eclipse-temurin:17-jdk-jammy
+
 WORKDIR /app
 
-# Add the built jar file to the container
-COPY target/user-service-1.0.0.jar user-service.jar
+# Copy only the built JAR from the builder stage
+COPY --from=builder /build/target/user-service-1.0.0.jar user-service.jar
 
-# Expose the port the app runs on
 EXPOSE 8081
 
-# Run the jar file
 ENTRYPOINT ["java", "-jar", "user-service.jar"]

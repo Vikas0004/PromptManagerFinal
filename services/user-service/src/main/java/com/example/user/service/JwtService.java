@@ -13,7 +13,7 @@ public class JwtService {
 
 	public String generateToken(String username, String role) {
 		return Jwts.builder().setSubject(username).claim("role", role).setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + 600_000)) // 10 minutes Expiry
+				.setExpiration(new Date(System.currentTimeMillis() + 3_600_000)) // 60 minutes Expiry
 				.signWith(key, SignatureAlgorithm.HS256).compact();
 	}
 

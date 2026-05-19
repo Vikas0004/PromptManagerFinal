@@ -13,19 +13,23 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import com.promptmanager.analyticsservice.events.PromptViewedEvent;
+
+import com.promptmanager.analyticsservice.messaging.AnalyticsEventProducer;
 
 @RestController
 @RequestMapping("/analytics")
-//@CrossOrigin(origins = "*")
 public class AnalyticsController {
 
 	private final AnalyticsService analyticsService;
+	private final AnalyticsEventProducer eventProducer;
 
-	public AnalyticsController(AnalyticsService analyticsService) {
+	public AnalyticsController(AnalyticsService analyticsService, AnalyticsEventProducer eventProducer) {
 		this.analyticsService = analyticsService;
+		this.eventProducer = eventProducer;
 	}
 
-	// 🟢 User analytics
+	// User analytics
 	@GetMapping("/my")
 	public ResponseEntity<?> getUserAnalytics(HttpServletRequest request) {
 		String username = request.getHeader("X-User-Name");
@@ -36,7 +40,7 @@ public class AnalyticsController {
 		return ResponseEntity.ok(userStats);
 	}
 
-	// 🟣 Global analytics (Admin only)
+	// Global analytics (Admin only)
 	@GetMapping("/global")
 	public ResponseEntity<?> getGlobalAnalytics(HttpServletRequest request) {
 		String role = request.getHeader("X-User-Role");
@@ -46,14 +50,32 @@ public class AnalyticsController {
 		return ResponseEntity.ok(analyticsService.getGlobalAnalytics());
 	}
 
-	// 🔵 Increment stats
+	// Increment stats
+//	@PostMapping("/increment/view/{promptId}")
+//	public ResponseEntity<?> incrementView(@PathVariable UUID promptId, HttpServletRequest request) {
+//		String username = request.getHeader("X-User-Name");
+//		if (username == null || username.isBlank()) {
+//			return ResponseEntity.status(401).body("Unauthorized: missing username header.");
+//		}
+//		return ResponseEntity.ok(analyticsService.recordView(promptId, username));
+//	}
+
+	
+	//Now uses RabbiitMQ
 	@PostMapping("/increment/view/{promptId}")
 	public ResponseEntity<?> incrementView(@PathVariable UUID promptId, HttpServletRequest request) {
+
 		String username = request.getHeader("X-User-Name");
+
 		if (username == null || username.isBlank()) {
 			return ResponseEntity.status(401).body("Unauthorized: missing username header.");
 		}
-		return ResponseEntity.ok(analyticsService.recordView(promptId, username));
+
+		PromptViewedEvent event = new PromptViewedEvent(promptId, username);
+
+		eventProducer.publishViewEvent(event);
+
+		return ResponseEntity.accepted().body("View event published successfully");
 	}
 
 	@PostMapping("/increment/copy/{promptId}")
@@ -121,7 +143,7 @@ public class AnalyticsController {
 		}
 	}
 
-	// 🔍 Most viewed / favorited / copied
+	// Most viewed / favorited / copied
 	@GetMapping("/most-viewed")
 	public ResponseEntity<?> mostViewed(HttpServletRequest request) {
 		String username = request.getHeader("X-User-Name");

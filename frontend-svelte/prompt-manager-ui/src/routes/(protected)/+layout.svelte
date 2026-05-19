@@ -11,14 +11,14 @@
 
   let mobileOpen = false;
 
-  // ✅ Hydrate store and redirect unauthenticated users
+  //  Hydrate store and redirect unauthenticated users
   onMount(() => {
     loadUser();
     const auth = localStorage.getItem("auth");
     if (!auth) goto("/login");
   });
 
-  // ✅ Keep store synced across route changes
+  // Keep store synced across route changes
   afterNavigate(() => {
     loadUser();
   });
@@ -28,7 +28,7 @@
     goto("/login");
   }
 
-  // ✅ Active link detection
+  // Active link detection
   function isActive(p: string) {
     return path === p || path.startsWith(p + "/");
   }

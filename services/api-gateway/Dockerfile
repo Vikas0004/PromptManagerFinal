@@ -1,18 +1,26 @@
-# Start from a base image with Java runtime
-FROM openjdk:17-jdk-slim
+# ---------- Stage 1: Build ----------
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
-# Metadata
-LABEL maintainer="you@example.com"
-LABEL description="API Gateway Microservice"
+WORKDIR /build
 
-# Set working directory
+# Copy pom.xml and download dependencies first (Docker cache optimization)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN mvn clean package -DskipTests
+
+# ---------- Stage 2: Runtime ----------
+FROM eclipse-temurin:17-jdk-jammy
+
 WORKDIR /app
 
-# Copy the jar file (assumes it's built using Maven as target/api-gateway.jar)
-COPY target/api-gateway-1.0.0.jar api-gateway.jar
+# Copy only the built JAR from the builder stage
+COPY --from=builder /build/target/api-gateway-1.0.0.jar api-gateway.jar
 
-# Expose the port the app runs on
 EXPOSE 8080
 
-# Run the app
 ENTRYPOINT ["java", "-jar", "api-gateway.jar"]

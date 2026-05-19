@@ -6,14 +6,14 @@ spring:
     name: user-service
 
   datasource:
-    url: jdbc:postgresql://promptmanager.c030omec28ek.us-east-1.rds.amazonaws.com:5432/promptmanager   # 👈 your DB name here
-    username: postgres                             # 👈 your DB user
-    password: pID5fL0KVQVvNJpRHNQD                             # 👈 your DB password
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/promptmanager}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}                            
+    password: ${SPRING_DATASOURCE_PASSWORD:root}                             
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update     # creates/updates tables automatically
+      ddl-auto: update     
     show-sql: true
     properties:
       hibernate:
@@ -26,8 +26,10 @@ eureka:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
-    #prefer-ip-address: true
-    prefer-ip-address: false
-    hostname: user-service-promptmanager.microservice-namespace  # 👈 ECS Cloud Map DNS name
-    non-secure-port: 8081  
+    prefer-ip-address: true
+    #hostname: localhost
+    instance-id: user-service:8081
+    #prefer-ip-address: false
+    #hostname: user-service-promptmanager.microservice-namespace
+    #non-secure-port: 8081  
 

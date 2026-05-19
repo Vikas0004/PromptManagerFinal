@@ -92,6 +92,7 @@
         <option>Gemini</option>
         <option>Claude</option>
         <option>Perplexity</option>
+        <option>Midjourney</option>
       </select>
     </div>
 

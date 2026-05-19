@@ -3,11 +3,25 @@
     import { goto } from "$app/navigation";
     import { apiFetch } from "$lib/utils/api";
 
+    // interface Prompt {
+    //     id: string;
+    //     title: string;
+    //     description: string;
+    //     aiTool: string;
+    //     favorite?: boolean;
+    // }
+
     interface Prompt {
         id: string;
         title: string;
         description: string;
         aiTool: string;
+
+        predictedAiTool?: string;
+        predictionConfidence?: number;
+
+        similarityScore?: number;
+
         favorite?: boolean;
     }
 
@@ -16,6 +30,7 @@
     let loading = true;
     let errorMsg: string | null = null;
     let searchQuery = "";
+    let searchMode: "keyword" | "semantic" = "keyword";
 
     const API_URL = import.meta.env.VITE_API_URL;
 
@@ -43,25 +58,83 @@
         }
     }
 
+    // async function searchPrompts() {
+    //     if (!searchQuery.trim()) {
+    //         loadPrompts();
+    //         return;
+    //     }
+    //     loading = true;
+    //     errorMsg = null;
+    //     try {
+    //         const res = await apiFetch(
+    //             `${API_URL}/prompts/search?query=${encodeURIComponent(searchQuery)}`,
+    //         );
+    //         const data: Prompt[] = await res.json();
+
+    //         prompts = data.map((p) => ({
+    //             ...p,
+    //             favorite: favoriteIds.includes(p.id),
+    //         }));
+    //     } catch (e) {
+    //         errorMsg = "Search failed.";
+    //         console.error("searchPrompts error:", e);
+    //     } finally {
+    //         loading = false;
+    //     }
+    // }
+
     async function searchPrompts() {
         if (!searchQuery.trim()) {
             loadPrompts();
             return;
         }
+
         loading = true;
         errorMsg = null;
-        try {
-            const res = await apiFetch(
-                `${API_URL}/prompts/search?query=${encodeURIComponent(searchQuery)}`,
-            );
-            const data: Prompt[] = await res.json();
 
-            prompts = data.map((p) => ({
-                ...p,
-                favorite: favoriteIds.includes(p.id),
-            }));
+        try {
+            /*
+             * KEYWORD SEARCH
+             */
+            if (searchMode === "keyword") {
+                const res = await apiFetch(
+                    `${API_URL}/prompts/search?query=${encodeURIComponent(searchQuery)}`,
+                );
+
+                const data: Prompt[] = await res.json();
+
+                prompts = data.map((p) => ({
+                    ...p,
+                    favorite: favoriteIds.includes(p.id),
+                }));
+            } else {
+                /*
+                 * SEMANTIC SEARCH
+                 */
+                const res = await apiFetch(
+                    `${API_URL}/prompts/semantic-search`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            query: searchQuery,
+                        }),
+                    },
+                );
+
+                const data = await res.json();
+
+                prompts = data.map((item: any) => ({
+                    ...item.prompt,
+                    similarityScore: item.similarityScore,
+                    favorite: favoriteIds.includes(item.prompt.id),
+                }));
+            }
         } catch (e) {
             errorMsg = "Search failed.";
+
             console.error("searchPrompts error:", e);
         } finally {
             loading = false;
@@ -125,10 +198,36 @@
         <h1 class="text-2xl font-bold text-center">Explore Prompts</h1>
 
         <!-- 🔍 Search input -->
-        <div class="flex justify-center mt-4">
+        <!-- <div class="flex justify-center mt-4"> -->
+        <div class="flex flex-col items-center gap-3 mt-4">
+            <div class="flex gap-2">
+                <button
+                    on:click={() => (searchMode = "keyword")}
+                    class={`px-4 py-2 rounded text-sm ${
+                        searchMode === "keyword"
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 text-gray-700"
+                    }`}
+                >
+                    Keyword Search
+                </button>
+
+                <button
+                    on:click={() => (searchMode = "semantic")}
+                    class={`px-4 py-2 rounded text-sm ${
+                        searchMode === "semantic"
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 text-gray-700"
+                    }`}
+                >
+                    Semantic Search
+                </button>
+            </div>
             <input
                 type="text"
-                placeholder="Search prompts..."
+                placeholder={searchMode === "keyword"
+                    ? "Search by keywords..."
+                    : "Describe what you are looking for..."}
                 bind:value={searchQuery}
                 on:keyup={(e) => e.key === "Enter" && searchPrompts()}
                 class="border rounded px-3 py-2 w-full max-w-md"
@@ -170,6 +269,35 @@
                             <p class="text-xs text-indigo-500 mt-2">
                                 {p.aiTool}
                             </p>
+                            {#if p.predictedAiTool}
+                                <div class="mt-2 flex flex-wrap gap-2">
+                                    <span
+                                        class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
+                                    >
+                                        Suggested: {p.predictedAiTool}
+                                    </span>
+
+                                    {#if p.predictionConfidence}
+                                        <span
+                                            class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
+                                        >
+                                            {(
+                                                p.predictionConfidence * 100
+                                            ).toFixed(0)}%
+                                        </span>
+                                    {/if}
+                                </div>
+                            {/if}
+                            {#if p.similarityScore !== undefined}
+                                <div class="mt-2">
+                                    <span
+                                        class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full"
+                                    >
+                                        Similarity:
+                                        {(p.similarityScore * 100).toFixed(1)}%
+                                    </span>
+                                </div>
+                            {/if}
                         </div>
 
                         <div class="flex justify-between items-center mt-4">

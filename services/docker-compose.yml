@@ -1,0 +1,243 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: promptmanager
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+
+    ports:
+      - "11434:11434"
+
+    volumes:
+      - ollama_data:/root/.ollama
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  eureka-server:
+    image: vikasbhalla0004/eureka-server-promptmanagerfinal:latest
+    container_name: eureka-server
+
+    ports:
+      - "8761:8761"
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  api-gateway:
+    image: vikasbhalla0004/api-gateway-promptmanagerfinal:latest
+    container_name: api-gateway
+
+    depends_on:
+      - eureka-server
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  user-service:
+    image: vikasbhalla0004/user-service-promptmanagerfinal:latest
+    container_name: user-service
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/promptmanager
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+
+    depends_on:
+      - postgres
+      - eureka-server
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  prompt-service:
+    image: vikasbhalla0004/prompt-service-promptmanagerfinal:latest
+    container_name: prompt-service
+
+    ports:
+      - "8082:8082"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/promptmanager
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+
+    depends_on:
+      - postgres
+      - preprocessing-service
+      - ml-service
+      - eureka-server
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  analytics-service:
+    image: vikasbhalla0004/analytics-service-promptmanagerfinal:latest
+    container_name: analytics-service
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/promptmanager
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+
+    depends_on:
+      - postgres
+      - rabbitmq
+      - eureka-server
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  preprocessing-service:
+    image: vikasbhalla0004/preprocessing-service-promptmanagerfinal:latest
+    container_name: preprocessing-service
+
+    ports:
+      - "8001:8001"
+
+    env_file:
+      - ./preprocessing-service/.env
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  ml-service:
+    image: vikasbhalla0004/ml-service-promptmanagerfinal:latest
+    container_name: ml-service
+
+    ports:
+      - "8002:8002"
+
+    env_file:
+      - ./ml-service/.env
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  llm-service:
+    image: vikasbhalla0004/llm-service-promptmanagerfinal:latest
+    container_name: llm-service
+
+    ports:
+      - "8005:8005"
+
+    env_file:
+      - ./llm-service/.env
+
+    depends_on:
+      - ollama
+      - prompt-service
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+  svelte-frontend:
+    # build:
+    #   context: ../frontend-svelte/prompt-manager-ui
+    #   args:
+    #     VITE_API_URL: http://localhost:8080
+    #     VITE_IMPROVE_API_URL: http://localhost:8005
+    image: vikasbhalla0004/svelte-frontend-promptmanagerfinal:latest
+    container_name: svelte-frontend
+
+    ports:
+      - "5173:80"
+
+    depends_on:
+      - api-gateway
+
+    networks:
+      - prompt-network
+
+    restart: unless-stopped
+
+
+networks:
+  prompt-network:
+
+
+volumes:
+  postgres_data:
+  ollama_data:

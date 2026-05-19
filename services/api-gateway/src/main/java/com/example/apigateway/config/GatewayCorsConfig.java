@@ -12,8 +12,9 @@ public class GatewayCorsConfig {
 	@Bean
 	public CorsWebFilter corsWebFilter() {
 		CorsConfiguration corsConfig = new CorsConfiguration();
-//        corsConfig.addAllowedOrigin("http://vikas-3175099-svelte-frontend.s3-website-us-east-1.amazonaws.com");
-		corsConfig.addAllowedOrigin("http://vikas-3175099-prompts-manager-frontend.s3-website-us-east-1.amazonaws.com");
+//        corsConfig.addAllowedOrigin("*");
+		corsConfig.addAllowedOrigin("http://localhost:5173");
+//		corsConfig.addAllowedOrigin("http://vikas-3175099-prompts-manager-frontend.s3-website-us-east-1.amazonaws.com");
 		corsConfig.addAllowedHeader("*");
 		corsConfig.addAllowedMethod("*");
 		corsConfig.setAllowCredentials(true);

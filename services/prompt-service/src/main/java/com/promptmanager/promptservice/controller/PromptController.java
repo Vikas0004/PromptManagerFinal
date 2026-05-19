@@ -1,5 +1,7 @@
 package com.promptmanager.promptservice.controller;
 
+import com.promptmanager.promptservice.dto.SemanticPromptResult;
+import com.promptmanager.promptservice.dto.SemanticSearchRequest;
 import com.promptmanager.promptservice.model.Prompt;
 import com.promptmanager.promptservice.service.PromptService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +21,7 @@ public class PromptController {
 		this.promptService = promptService;
 	}
 
-	// 🟢 Create prompt for logged-in user
+	// Create prompt for logged-in user
 	@PostMapping("/add")
 	public ResponseEntity<?> createPrompt(@RequestBody Prompt prompt, HttpServletRequest request) {
 		System.out.println("Request Recieved To Add Prompt");
@@ -36,7 +38,7 @@ public class PromptController {
 		return ResponseEntity.ok(created);
 	}
 
-	// 🟢 Get all prompts for the logged-in user
+	// Get all prompts for the logged-in user
 	@GetMapping("/my")
 	public ResponseEntity<?> getMyPrompts(HttpServletRequest request) {
 		String username = request.getHeader("X-User-Name");
@@ -48,7 +50,7 @@ public class PromptController {
 		return ResponseEntity.ok(prompts);
 	}
 
-	// 🟣 Get all prompts
+	// Get all prompts
 	@GetMapping("/all")
 	public ResponseEntity<?> getAllPrompts(HttpServletRequest request) {
 
@@ -56,7 +58,7 @@ public class PromptController {
 		return ResponseEntity.ok(allPrompts);
 	}
 
-	// 🔵 Get prompt details by ID
+	// Get prompt details by ID
 	@GetMapping("/details/{id}")
 	public ResponseEntity<?> getPrompt(@PathVariable UUID id, HttpServletRequest request) {
 		String username = request.getHeader("X-User-Name");
@@ -73,7 +75,7 @@ public class PromptController {
 		return ResponseEntity.ok(prompt);
 	}
 
-	// 🟡 Update prompt (only owner or admin)
+	// Update prompt (only owner or admin)
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updatePrompt(@PathVariable UUID id, @RequestBody Prompt prompt,
 			HttpServletRequest request) {
@@ -99,7 +101,7 @@ public class PromptController {
 		return ResponseEntity.ok(updated);
 	}
 
-	// 🔴 Delete prompt (only owner or admin)
+	// Delete prompt (only owner or admin)
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deletePrompt(@PathVariable UUID id, HttpServletRequest request) {
 		String username = request.getHeader("X-User-Name");
@@ -122,7 +124,7 @@ public class PromptController {
 		return ResponseEntity.noContent().build();
 	}
 
-	// 🔍 Search within user's own prompts
+	// Search within user's own prompts
 	@GetMapping("/search")
 	public ResponseEntity<?> searchPrompts(@RequestParam String query, HttpServletRequest request) {
 		String username = request.getHeader("X-User-Name");
@@ -131,6 +133,22 @@ public class PromptController {
 		}
 
 		List<Prompt> results = promptService.searchPrompts(query);
+		return ResponseEntity.ok(results);
+	}
+
+	@PostMapping("/semantic-search")
+	public ResponseEntity<?> semanticSearch(@RequestBody SemanticSearchRequest searchRequest,
+			HttpServletRequest request) {
+
+		String username = request.getHeader("X-User-Name");
+
+		if (username == null || username.isBlank()) {
+			System.out.println("No Request Header Found, Rejecting Request");
+			return ResponseEntity.status(401).body("Unauthorized: missing username header.");
+		}
+
+		List<SemanticPromptResult> results = promptService.semanticSearch(searchRequest.getQuery(), username);
+
 		return ResponseEntity.ok(results);
 	}
 }

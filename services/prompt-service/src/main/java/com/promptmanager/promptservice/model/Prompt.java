@@ -23,6 +23,15 @@ public class Prompt {
     @Column(length = 100)
     private String aiTool;
 
+    @Column(columnDefinition = "TEXT")
+    private String cleanedPrompt;
+
+    private String predictedAiTool;
+
+    private Double predictionConfidence;
+
+    @Column(columnDefinition = "TEXT")
+    private String embeddingVector;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -93,5 +102,37 @@ public class Prompt {
 
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public String getCleanedPrompt() {
+		return cleanedPrompt;
+	}
+
+	public void setCleanedPrompt(String cleanedPrompt) {
+		this.cleanedPrompt = cleanedPrompt;
+	}
+
+	public String getPredictedAiTool() {
+		return predictedAiTool;
+	}
+
+	public void setPredictedAiTool(String predictedAiTool) {
+		this.predictedAiTool = predictedAiTool;
+	}
+
+	public Double getPredictionConfidence() {
+		return predictionConfidence;
+	}
+
+	public void setPredictionConfidence(Double predictionConfidence) {
+		this.predictionConfidence = predictionConfidence;
+	}
+
+	public String getEmbeddingVector() {
+		return embeddingVector;
+	}
+
+	public void setEmbeddingVector(String embeddingVector) {
+		this.embeddingVector = embeddingVector;
 	}
 }
