@@ -1,8 +1,8 @@
-# 🧠 Prompt Manager App – Backend (Microservices)
+# Prompt Manager App Final – Backend (Microservices | Python) | Front End (Svelte) 
 
-A **cloud-native, microservices-based backend** for the **Prompt Manager App**, a platform that allows users to create, manage, and analyze AI prompts across tools like ChatGPT, Midjourney, Claude, and Gemini.
+A **cloud-native, microservices-based backend** for the **Prompt Manager Final Application**, that allows users to create, manage, and analyze AI prompts across tools like ChatGPT, Midjourney, Claude, and Gemini.
 
-This backend is built using **Spring Boot**, **Docker**, and **AWS Fargate**, following best practices of **JWT-based security**, **service isolation**, and **observability**.
+This backend is built using **Spring Boot**, **Python**, **Docker**, and **Docker Compose**, following best practices of **JWT-based security**, **service isolation**.
 
 ---
 
@@ -15,34 +15,112 @@ This backend is built using **Spring Boot**, **Docker**, and **AWS Fargate**, fo
 | **analytics-service** | Tracks and reports prompt usage analytics (views, favorites, copies) | Spring Boot, JPA | MySQL (RDS) |
 | **api-gateway** | Entry point for routing and token validation between services | Spring Cloud Gateway | - |
 | **eureka-server** | Service Discovery |  - |
+| **ml-service** | User for trainging the model on prompts and implemenatation of semantic search | Python,FastApi |  - |
+| **preprocessing-service** | pre process the prompt data before storing to the database uses vector embedding and lammetization |  Python,FastApi |  - |
+| **llm-service** | llm service uses the ml-service and rag-pipeline to create improved prompts with the help of ollama llama3 |   Python,FastApi |  - |
 
-All services are **independently deployable Docker containers**, **AWS ECS Fargate (production)**.
 
----
 
-## 🧩 Architecture
 
-         ┌──────────────────────────────┐
-         │        Frontend (SvelteKit)  │
-         │  Hosted on AWS S3 (Static)   │
-         └──────────────┬───────────────┘
-                        │ REST API Calls
-               ┌────────▼────────┐
-               │   API Gateway   │
-               │ (JWT Validation)│
-               └───────┬─────────┘
-      ┌────────────────┼────────────────┐
-      │                │                │
-┌────────▼───────┐ ┌──────▼────────┐ ┌─────▼─────────┐
-│ user-service │ │ prompt-service │ │ analytics-svc │
-│ Auth, JWT, IAM │ │ CRUD, Filters │ │ Stats, Reports│
-└───────────────┬┘ └───────────────┬┘ └──────────────┘
-│ │
-▼ ▼
-AWS RDS (MySQL) CloudWatch Logs
 
+All services are **independently deployable Docker containers**, **Demo Using Docker Compose since AWS Free Tier credits are exhausted**.
 
 ---
+
+## Architecture
+
+The Prompt Manager App follows a cloud-native microservices architecture with centralized authentication, analytics tracking, AI-powered services, and asynchronous communication using RabbitMQ.
+
+```text
+                                      ┌──────────────────────────────┐
+                                      │     Frontend (SvelteKit)     │
+                                      │ AWS S3 Static Hosting /      │
+                                      │     Docker Compose           │
+                                      └──────────────┬───────────────┘
+                                                     │
+                                             REST API Calls
+                                                     │
+                                      ┌──────────────▼──────────────┐
+                                      │         API Gateway          │
+                                      │  JWT Validation & Routing    │
+                                      └───────┬─────────┬───────────┘
+                                              │         │
+         ┌────────────────────────────────────┘         └──────────────────────────────────┐
+         │                                                                                 │
+
+┌────────▼─────────┐                                                         ┌────────────▼──────────┐
+│   User Service   │                                                         │    Prompt Service     │
+│ Authentication   │                                                         │ Prompt CRUD Operations│
+│ JWT Generation   │                                                         │ Search & Filters      │
+│ User Management  │                                                         │ Prompt Details        │
+└────────┬─────────┘                                                         └───────┬──────┬───────┘
+         │                                                                           │      │
+         │                                                                           │      │
+         │                                              ┌────────────────────────────┘      │
+         │                                              │                                   │
+         │                                              ▼                                   ▼
+
+         │                             ┌──────────────────────────┐       ┌──────────────────────────┐
+         │                             │  Preprocessing Service   │       │      ML/NLP Service      │
+         │                             │  FastAPI + Python        │       │  FastAPI + Python        │
+         │                             │ Stopword Removal         │       │ AI Tool Prediction       │
+         │                             │ Lemmatization            │       │ Embedding Generation     │
+         │                             │ Duplicate Detection      │       │ Semantic Search Support  │
+         │                             └─────────────┬────────────┘       └─────────────┬────────────┘
+         │                                           │                                  │
+         │                                           │                                  │
+         │                                           └──────────────┬───────────────────┘
+         │                                                          │
+         │                                                          ▼
+
+         │                                           ┌──────────────────────────┐
+         │                                           │       LLM Service         │
+         │                                           │  RAG-based Prompt Assist  │
+         │                                           │ Prompt Improvement        │
+         │                                           │ Semantic Similarity       │
+         │                                           │ Ollama / Local LLM        │
+         │                                           └─────────────┬────────────┘
+         │                                                         │
+         │                                                         │
+         │                                                         ▼
+
+         │                                           ┌──────────────────────────┐
+         │                                           │     Vector Store          │
+         │                                           │ FAISS / ChromaDB          │
+         │                                           │ Prompt Embeddings         │
+         │                                           └──────────────────────────┘
+
+         │
+         │
+         │                                 View / Copy / Favorite Events
+         │                                                 │
+         │                                                 ▼
+
+         │                                 ┌──────────────────────────┐
+         │                                 │    Analytics Service      │
+         │                                 │ Views, Favorites, Copies  │
+         │                                 │ Reports & Aggregations    │
+         │                                 └─────────────┬────────────┘
+         │                                               │
+         │                               Async View Events via RabbitMQ
+         │                                               │
+         │                                               ▼
+
+         │                                 ┌──────────────────────────┐
+         │                                 │        RabbitMQ           │
+         │                                 │   Event Message Broker    │
+         │                                 └──────────────────────────┘
+
+         │
+         └─────────────────────────────────────────────────────────────────────────────┐
+                                                                                      │
+                                                                                      ▼
+
+                                             ┌──────────────────────────────────────┐
+                                             │         PostgreSQL Database          │
+                                             │ Users, Prompts, Analytics Data       │
+                                             │ Embeddings Metadata                  │
+                                             └──────────────────────────────────────┘---
 
 ## ⚙️ Features
 
@@ -66,16 +144,56 @@ AWS RDS (MySQL) CloudWatch Logs
   - `GET /prompts/search?query=` → search prompts
 
 ### 3. Analytics Service
-- Tracks prompt views, copies, favorites
-- Aggregates reports:
-  - Most viewed prompts
-  - Most favorited prompts
-  - Most copied prompts
-- Endpoints:
-  - `/analytics/global/most-viewed`
-  - `/analytics/global/most-favorited`
-  - `/analytics/global/most-copied`
-  - `/analytics/summary`
+
+- Responsible for tracking prompt engagement activities such as:
+  - Prompt views
+  - Prompt copies
+  - Prompt favorites / unfavorites
+
+- Maintains analytics data for both individual users and global system-wide reporting.
+
+- Supports role-based analytics:
+  - Regular users can view analytics related to their own prompts.
+  - Admin users can access global analytics and summary reports.
+
+#### RabbitMQ Integration
+
+- RabbitMQ is used for asynchronous event-driven processing of prompt view tracking.
+
+- When a user opens a prompt, the Analytics Service publishes a `PromptViewedEvent` message to RabbitMQ instead of directly updating the database synchronously.
+
+- A consumer listens to these events and processes analytics updates in the background.
+
+#### Main Endpoints
+
+##### User Analytics
+- `GET /analytics/my`
+- `GET /analytics/favorites`
+
+##### Global/Admin Analytics
+- `GET /analytics/global`
+- `GET /analytics/summary`
+
+##### Analytics Tracking
+- `POST /analytics/increment/view/{promptId}`
+- `POST /analytics/increment/copy/{promptId}`
+- `POST /analytics/increment/favorite/{promptId}`
+- `POST /analytics/decrement/favorite/{promptId}`
+
+##### Prompt Validation & Cleanup
+- `GET /analytics/check-favorite/{promptId}`
+- `DELETE /analytics/delete/{promptId}`
+
+##### Reporting Endpoints
+- `GET /analytics/most-viewed`
+- `GET /analytics/most-favorited`
+- `GET /analytics/most-copied`
+
+#### Additional Notes
+
+- The Analytics Service implementation includes asynchronous RabbitMQ-based view event publishing through `AnalyticsEventProducer` and `PromptViewedEvent`.
+
+- Copy and favorite actions are currently processed synchronously through the service layer.
 
 ---
 
@@ -91,7 +209,12 @@ AWS RDS (MySQL) CloudWatch Logs
 
 ---
 
-## 🧪 Local Setup (Docker Compose) - Since the app is deployed on AWS, local setup could not be completed.
+## 🧪 Local Setup (Docker Compose) - Navigate to the service folder and run docker compose up | docker compose up -d
+The initial container creation may take some time due to ollama size, if llama3 model is not already istalled that needs to be installed manually.
+
+once all the containers are up and running go to
+Entrypoint: [Prompt Manager](https://localhost:5173/login)
+
 
 # 🧠 Prompt Manager App – Frontend (SvelteKit UI)
 
