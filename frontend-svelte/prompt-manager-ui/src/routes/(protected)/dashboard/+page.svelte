@@ -2,7 +2,6 @@
   import { user, role } from "$lib/stores/auth";
   import { goto } from "$app/navigation";
 
-  // Svelte auto-subscription shorthand — no manual subscribe/unsubscribe
   $: username = $user;
   $: userRole = $role;
 

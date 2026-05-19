@@ -21,7 +21,7 @@ public class UserServiceApplication {
             if (repo.findByUsername("admin").isEmpty()) {
                 User admin = new User("admin", encoder.encode("admin123"), "admin@example.com", Role.ADMIN);
                 repo.save(admin);
-                System.out.println("✅ Default ADMIN user created: username=admin, password=admin123");
+                System.out.println("Default ADMIN user created: username=admin, password=admin123");
             }
         };
     }

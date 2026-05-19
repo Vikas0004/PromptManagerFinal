@@ -5,7 +5,6 @@ export const load: LayoutLoad = async () => {
 
   const auth = localStorage.getItem("auth");
   if (!auth) {
-    // rely on global layout redirect for login
     return { userRole: null };
   }
 

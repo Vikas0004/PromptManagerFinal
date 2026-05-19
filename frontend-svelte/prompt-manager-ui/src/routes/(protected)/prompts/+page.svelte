@@ -9,7 +9,6 @@
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // 🔹 Load user’s own prompts
   const fetchPrompts = async () => {
     error = "";
     try {
@@ -22,7 +21,6 @@
     }
   };
 
-  // 🔹 Check if prompt can be deleted
   const canDeletePrompt = async (id: string) => {
     try {
       const res = await apiFetch(`${API_URL}/analytics/check-favorite/${id}`);
@@ -48,7 +46,6 @@
     }
   };
 
-  // 🔹 Delete prompt and related stats
   const deletePrompt = async (id: string) => {
     if (!confirm("Are you sure you want to delete this prompt?")) return;
     error = "";
@@ -58,13 +55,11 @@
     if (!allowed) return;
 
     try {
-      // 1️⃣ Delete prompt
       const promptRes = await apiFetch(`${API_URL}/prompts/${id}`, {
         method: "DELETE",
       });
       if (!promptRes.ok) throw new Error("Prompt delete failed");
 
-      // 2️⃣ Delete analytics
       const statsRes = await apiFetch(`${API_URL}/analytics/delete/${id}`, {
         method: "DELETE",
       });

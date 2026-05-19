@@ -93,19 +93,10 @@ public class PromptService {
 
 	public List<SemanticPromptResult> semanticSearch(String query, String userId) {
 
-		/*
-		 * GENERATE QUERY EMBEDDING
-		 */
 		List<Double> queryEmbedding = aiIntegrationService.generateEmbeddingVector(query);
 
-		/*
-		 * FETCH USER PROMPTS
-		 */
 		List<Prompt> prompts = promptRepository.findByUserId(userId);
 
-		/*
-		 * CALCULATE SIMILARITY
-		 */
 		List<SemanticPromptResult> results = prompts.stream().map(prompt -> {
 
 			List<Double> storedEmbedding = EmbeddingUtils.parseEmbedding(prompt.getEmbeddingVector());
@@ -115,14 +106,8 @@ public class PromptService {
 			return new SemanticPromptResult(prompt, similarity);
 		})
 
-				/*
-				 * SORT BY SIMILARITY
-				 */
 				.sorted(Comparator.comparingDouble(SemanticPromptResult::getSimilarityScore).reversed())
 
-				/*
-				 * TOP RESULTS ONLY
-				 */
 				.limit(10)
 
 				.collect(Collectors.toList());

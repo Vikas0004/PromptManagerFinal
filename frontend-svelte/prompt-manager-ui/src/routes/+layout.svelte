@@ -1,17 +1,14 @@
 <script lang="ts">
-  // ✅ This keeps Tailwind CSS alive globally
   import "../app.css";
 
   import { afterNavigate } from "$app/navigation";
   import { loadUser } from "$lib/stores/auth";
   import { token, logoutUser } from "$lib/stores/auth";
 
-  // ✅ Run once at startup
   if (typeof window !== "undefined") {
     loadUser();
   }
 
-  // ✅ Keep reloading user data after each route change
   afterNavigate(() => {
     loadUser();
   });

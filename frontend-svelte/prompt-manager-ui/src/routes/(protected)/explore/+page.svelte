@@ -3,14 +3,7 @@
     import { goto } from "$app/navigation";
     import { apiFetch } from "$lib/utils/api";
 
-    // interface Prompt {
-    //     id: string;
-    //     title: string;
-    //     description: string;
-    //     aiTool: string;
-    //     favorite?: boolean;
-    // }
-
+    //new prompt with additional fields for AI enhancements
     interface Prompt {
         id: string;
         title: string;
@@ -58,31 +51,7 @@
         }
     }
 
-    // async function searchPrompts() {
-    //     if (!searchQuery.trim()) {
-    //         loadPrompts();
-    //         return;
-    //     }
-    //     loading = true;
-    //     errorMsg = null;
-    //     try {
-    //         const res = await apiFetch(
-    //             `${API_URL}/prompts/search?query=${encodeURIComponent(searchQuery)}`,
-    //         );
-    //         const data: Prompt[] = await res.json();
-
-    //         prompts = data.map((p) => ({
-    //             ...p,
-    //             favorite: favoriteIds.includes(p.id),
-    //         }));
-    //     } catch (e) {
-    //         errorMsg = "Search failed.";
-    //         console.error("searchPrompts error:", e);
-    //     } finally {
-    //         loading = false;
-    //     }
-    // }
-
+    //enhanced for AI
     async function searchPrompts() {
         if (!searchQuery.trim()) {
             loadPrompts();
@@ -197,8 +166,6 @@
     <section class="p-8 space-y-6">
         <h1 class="text-2xl font-bold text-center">Explore Prompts</h1>
 
-        <!-- 🔍 Search input -->
-        <!-- <div class="flex justify-center mt-4"> -->
         <div class="flex flex-col items-center gap-3 mt-4">
             <div class="flex gap-2">
                 <button

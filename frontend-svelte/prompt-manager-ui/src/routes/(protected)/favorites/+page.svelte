@@ -17,7 +17,6 @@
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // 🔹 Load all favorite prompts for current user
   async function loadFavorites() {
     loading = true;
     errorMsg = null;
@@ -54,7 +53,6 @@
     }
   }
 
-  // 🔹 View handler
   async function handleView(id: string) {
     try {
       await apiFetch(`${API_URL}/analytics/increment/view/${id}`, {
@@ -66,7 +64,6 @@
     }
   }
 
-  // 🔹 Copy handler
   async function handleCopy(p: Prompt) {
     try {
       await navigator.clipboard.writeText(`${p.title}\n\n${p.description}`);
@@ -78,7 +75,6 @@
     }
   }
 
-  // 🔹 Unfavorite handler (decrement + reload list)
   async function removeFavorite(p: Prompt) {
     try {
       await apiFetch(`${API_URL}/analytics/decrement/favorite/${p.id}`, {

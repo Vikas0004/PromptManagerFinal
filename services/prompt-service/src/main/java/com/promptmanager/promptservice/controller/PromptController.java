@@ -21,7 +21,7 @@ public class PromptController {
 		this.promptService = promptService;
 	}
 
-	// Create prompt for logged-in user
+	//Create prompt for logged-in user
 	@PostMapping("/add")
 	public ResponseEntity<?> createPrompt(@RequestBody Prompt prompt, HttpServletRequest request) {
 		System.out.println("Request Recieved To Add Prompt");
@@ -38,7 +38,7 @@ public class PromptController {
 		return ResponseEntity.ok(created);
 	}
 
-	// Get all prompts for the logged-in user
+	//Get all prompts for the logged-in user
 	@GetMapping("/my")
 	public ResponseEntity<?> getMyPrompts(HttpServletRequest request) {
 		String username = request.getHeader("X-User-Name");

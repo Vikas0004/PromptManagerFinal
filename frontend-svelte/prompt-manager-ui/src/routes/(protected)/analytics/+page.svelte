@@ -6,7 +6,6 @@
 
     const API_URL = import.meta.env.VITE_API_URL;
 
-    // --- Data Models ---
     interface StatItem {
         promptId: string;
         views?: number;
@@ -32,7 +31,7 @@
         updatedAt: string;
     }
 
-    // --- State ---
+
     let loading = true;
     let unauthorized = false;
     let viewed: StatItem[] = [];
@@ -43,7 +42,6 @@
     const analyticsUrl = `${API_URL}/analytics`;
     const promptUrl = `${API_URL}/prompts/details`;
 
-    // --- Attach full prompt details ---
     async function attachPromptDetails(stats: StatItem[]): Promise<StatItem[]> {
         const enriched = await Promise.all(
             stats.map(async (item) => {
@@ -60,7 +58,6 @@
         return enriched;
     }
 
-    // --- Load analytics data ---
     onMount(async () => {
         if ($role !== "ADMIN") {
             goto("/analytics/my");

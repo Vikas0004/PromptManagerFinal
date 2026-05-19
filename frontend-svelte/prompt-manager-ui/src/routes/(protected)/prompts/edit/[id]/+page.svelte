@@ -19,7 +19,6 @@
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Load current prompt
   onMount(async () => {
     const id = $page.params.id;
     try {

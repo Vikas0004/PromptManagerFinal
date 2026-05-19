@@ -40,7 +40,7 @@ public interface PromptStatsRepository extends JpaRepository<PromptStats, UUID> 
 			""")
 	List<PromptSummaryDTO> findMostViewed();
 
-	// ✅ Most favorited (aggregate)
+	//Most favorited
 	@Query("""
 			    SELECT new com.promptmanager.analyticsservice.dto.PromptSummaryDTO(
 			        p.promptId,
@@ -55,7 +55,7 @@ public interface PromptStatsRepository extends JpaRepository<PromptStats, UUID> 
 			""")
 	List<PromptSummaryDTO> findMostFavorited();
 
-	// ✅ Most copied (aggregate)
+	//Most copied
 	@Query("""
 			    SELECT new com.promptmanager.analyticsservice.dto.PromptSummaryDTO(
 			        p.promptId,

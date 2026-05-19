@@ -4,16 +4,6 @@
   import { goto } from "$app/navigation";
   import { apiFetch } from "$lib/utils/api";
 
-  // interface Prompt {
-  //   id: string;
-  //   userId: string;
-  //   title: string;
-  //   description: string;
-  //   aiTool?: string;
-  //   favorite?: boolean;
-  //   createdAt?: string;
-  //   updatedAt?: string;
-  // }
 
   interface Prompt {
     id: string;
@@ -58,12 +48,7 @@
     const id = $page.params.id;
 
     try {
-      // // increment view count (ignore failure)
-      // await apiFetch(`${API_URL}/analytics/increment/view/${id}`, {
-      //   method: "POST",
-      // }).catch(() => null);
-
-      // load prompt details
+     
       const res = await apiFetch(`${API_URL}/prompts/details/${id}`);
       if (!res.ok) throw new Error(await res.text());
       prompt = await res.json();
@@ -81,7 +66,6 @@
     }
   });
 
-  // Copy prompt content and record analytics
   async function handleCopy() {
     if (!prompt) return;
     try {
