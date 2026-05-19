@@ -128,6 +128,7 @@ The Prompt Manager App follows a cloud-native microservices architecture with ce
   - `PUT /prompts/{id}` → update prompt
   - `DELETE /prompts/{id}` → delete prompt
   - `GET /prompts/search?query=` → search prompts
+  - `POST /prompts/semantic-search =` → Semantic prompts Search
 
 ### 3. Analytics Service
 
@@ -187,7 +188,8 @@ The Prompt Manager App follows a cloud-native microservices architecture with ce
 
 - **Java 17 + Spring Boot 3.x**
 - **Spring Data JPA + Hibernate**
-- **MySQL (AWS RDS)**
+- **Python**
+- **Postgres (Docker)**
 - **JWT Auth (io.jsonwebtoken)**
 - **Docker**
 - **Docker Compose**
