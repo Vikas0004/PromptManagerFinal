@@ -95,7 +95,7 @@ public class PromptService {
 
 		List<Double> queryEmbedding = aiIntegrationService.generateEmbeddingVector(query);
 
-		List<Prompt> prompts = promptRepository.findByUserId(userId);
+		List<Prompt> prompts = promptRepository.findAll();
 
 		List<SemanticPromptResult> results = prompts.stream().map(prompt -> {
 
